@@ -1,0 +1,126 @@
+<!-- submissions_list.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<h1>Submissions List - See all the available submissions</h1>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'submission.js' %}"></script>
+<table id="submissions-table">
+    <thead>
+        <tr>
+            <th>DOS</th>
+            <th>Recruiter ID</th>
+            <th>Consultant ID</th>
+            <th>Consultant Job Title</th>
+            <th>Implementation Partner</th>
+            <th>End Client</th>
+            <th>End Client Location</th>
+            <th>Implementation Partner Name</th>
+            <th>Implementation Partner Contact</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for submission in submissions %}
+        <tr>
+            <td id= 'dos_{{submission.id}}'>{{ submission.S_DOS }}</td>
+            <td id= 'recruiter_{{submission.id}}'>{{ submission.S_RecruiterId }}</td>
+            <td id= 'consultant_{{submission.id}}'>{{ submission.S_ConsultantId }}</td>
+            <td id= 'JobTitle_{{submission.id}}'>{{ submission.S_ConsultantJobTitle }}</td>
+            <td id= 'Imp_Partner_{{submission.id}}'>{{ submission.S_ImplementationPartner }}</td>
+            <td id= 'EndClient_{{submission.id}}'>{{ submission.S_EndClient }}</td>
+            <td id= 'EndClientLocation_{{submission.id}}'>{{ submission.S_EndClientLocation }}</td>
+            <td id= 'PartnerName_{{submission.id}}'>{{ submission.S_ImplementationPartner_Name }}</td>
+            <td id= 'PartnerContact_{{submission.id}}'>{{ submission.S_ImplementationPartner_Contact }}</td>
+            <td>
+                {% if submission.S_RecruiterId == user %}
+                <button onclick="handleEditButtonClick('{{submission.id}}')" id="editbutton_{{submission.id}}">Edit</button>
+                <button onclick="deleteSubmission('{{submission.id}}')" id="deletebutton_{{submission.id}}">Delete</button>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<h2>Create a New Submission</h2>
+<form method="post" action="{% url 'submissions-list' %}">
+    {% csrf_token %}
+
+    <label for="dos">DOS:</label>
+    <input type="date" name="dos" id="dos" value="{{ today|date:'Y-m-d' }}" required>
+    <br>
+
+    <label for="recruiter_{{submission.id}}">Recruiter:</label>
+    <select name="recruiter" id="recruiter_{{submission.id}}" style="width: 200px;">
+        {% for r in recruiters %}
+        <option value="{{ r.R_Id }}">{{ r.R_UserName }}</option>
+        {% endfor %}
+    </select>
+    <br>
+
+    <label for="consultant_{{submission.id}}">Consultant:</label>
+    <select name="consultant" id="consultant_{{submission.id}}">
+        {% for consultant in consultants %}
+        <option value="{{ consultant.C_Id }}">{{ consultant.C_Name }}</option>
+        {% endfor %}
+    </select>
+    <br>
+
+    <label for="consultant_job_title">Consultant Job Title:</label>
+    <input type="text" name="consultant_job_title" id="consultant_job_title">
+    <br>
+
+    <label for="implementation_partner">Implementation Partner:</label>
+    <input type="text" name="implementation_partner" id="implementation_partner">
+    <br>
+
+    <label for="end_client">End Client:</label>
+    <input type="text" name="end_client" id="end_client">
+    <br>
+
+    <label for="end_client_location">End Client Location:</label>
+    <input type="text" name="end_client_location" id="end_client_location">
+    <br>
+
+    <label for="implementation_partner_name">Implementation Partner Name:</label>
+    <input type="text" name="implementation_partner_name" id="implementation_partner_name">
+    <br>
+
+    <label for="implementation_partner_contact">Implementation Partner Contact:</label>
+    <input type="text" name="implementation_partner_contact" id="implementation_partner_contact">
+    <br>
+
+    <!-- Add more fields as needed -->
+
+    <button type="submit">Submit</button>
+</form>
+<script>
+    var recruitersData = JSON.parse('{{ json_recruiters|escapejs }}');
+    var consultantsData = JSON.parse('{{ json_consultants|escapejs }}');
+    console.log('In the HTML: ',typeof (recruitersData));
+    console.log('In the HTML: ', typeof (consultantsData));
+    // Add an event listener to each Edit button
+    /*
+    var editButtons = document.querySelectorAll('[id^="editbutton_"]');
+    editButtons.forEach(button => {
+        var submissionID = button.id.split('_')[1];
+        button.addEventListener('click', function () {
+            editSubmission(submissionID);
+        });
+    });
+    */
+
+    // Call the initializeDropdowns function for each submission
+    /*
+    var submissions = document.querySelectorAll('[id^="dos_"]');
+    submissions.forEach(submission => {
+        var submissionID = submission.id.split('_')[1];
+        initializeDropdowns(recruitersData, consultantsData, submissionID, '{{ user }}');
+    });
+    */
+    function handleEditButtonClick(submissionID) {
+        editSubmission(submissionID, '{{ user }}');
+        //initializeDropdowns(recruitersData, consultantsData, submissionID, '{{ user }}');
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>Sign up!</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.recruiter_name.label_tag }}
+        {{ form.recruiter_name }}
+        {{ form.recruiter_username.label_tag }}
+        {{ form.recruiter_username }}
+        {{ form.password.label_tag }}
+        {{ form.password }}
+        <button type="submit">Sign Up</button>
+    </form>
+</body>
+
+</html>
