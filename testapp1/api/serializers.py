@@ -75,7 +75,7 @@ class Submissions_Serializer(serializers.HyperlinkedModelSerializer):
         instance.S_EndClientLocation = validated_data.get('S_EndClientLocation', instance.S_EndClientLocation)
         instance.S_ImplementationPartner_Name = validated_data.get('S_ImplementationPartner_Name', instance.S_ImplementationPartner_Name)
         instance.S_ImplementationPartner_Contact = validated_data.get('S_ImplementationPartner_Contact', instance.S_ImplementationPartner_Contact)
-        print(instance)
+        print('In this update method: ',instance)
         instance.save()
         return instance
 

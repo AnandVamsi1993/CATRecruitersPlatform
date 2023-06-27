@@ -1,35 +1,54 @@
-function initializeDropdowns(recruitersData, consultantsData, submissionID,user ) {
+function initializeDropdowns(recruitersData, consultantsData, submissionID, user) {
+
     var recruiterElement = document.getElementById('recruiter_' + submissionID);
     var consultantElement = document.getElementById('consultant_' + submissionID);
+    var dateElement = document.getElementById('dos_' + submissionID);
 
-    //var recruiterElement = document.getElementById('recruiter-dropdown');
-    //var consultantElement = document.getElementById('consultant-dropdown');
-    // Clear the existing options in the dropdowns
     recruiterElement.innerHTML = '';
     consultantElement.innerHTML = '';
+
+    recruiterElement_dropdown = document.createElement('select');
+    consultantElement_dropdown = document.createElement('select');
+    
+    var currentDate = new Date();
+    var year = currentDate.getFullYear();
+    var month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+    var day = currentDate.getDate().toString().padStart(2, '0');
+
+    var formattedDate = year + '-' + month + '-' + day;
+    console.log(formattedDate);
+    dateElement.innerHTML = formattedDate;
+
+
 
     // Populate the recruiter dropdown
     recruitersData.forEach(recruiter => {
         var option = document.createElement('option');
-        option.value = user;
+        option.value = recruiter.R_UserName;
         option.text = recruiter.R_Name;
-        recruiterElement.appendChild(option);
+        recruiterElement_dropdown.appendChild(option);
     });
+
+    //recruiterElement.innerHTML = recruiterElement_dropdown.outerHTML;
+    recruiterElement.appendChild(recruiterElement_dropdown);
+    console.log('In the edit function: ', recruiterElement)
 
     // Populate the consultant dropdown
     consultantsData.forEach(consultant => {
         var option = document.createElement('option');
         option.value = consultant.C_Id;
         option.text = consultant.C_Name;
-        consultantElement.appendChild(option);
+        consultantElement_dropdown.appendChild(option);
     });
-    console.log(recruiterElement);
-    console.log(consultantElement);
+    //consultantElement.innerHTML = consultantElement_dropdown.outerHTML;
+    consultantElement.appendChild(consultantElement_dropdown);
+    console.log('In the edit function: ', consultantElement)
 }
 
 
 function editSubmission(submissionID, user) {
-    console.log('In the edit button')
+    console.log('Line 32');
+    console.log(submissionID);
     var dosElement = document.getElementById('dos_' + submissionID);
     var recruiterElement = document.getElementById('recruiter_' + submissionID);
     var consultantElement = document.getElementById('consultant_' + submissionID);
@@ -62,14 +81,14 @@ function editSubmission(submissionID, user) {
     partnerNameElement.classList.add('editable');
     partnerContactElement.classList.add('editable');
 
+    initializeDropdowns(recruitersData, consultantsData, submissionID, user);
+
     // Change the edit button to save button
     var editButton = document.getElementById('editbutton_' + submissionID);
     editButton.innerHTML = 'Save';
     editButton.onclick = function () {
         saveSubmission(submissionID,user);
     };
-
-    initializeDropdowns(recruitersData, consultantsData, submissionID, user);
 }
 
 function getCookie(name) {
@@ -101,9 +120,8 @@ function saveSubmission(submissionId,user) {
     var endClientLocationElement = document.getElementById('EndClientLocation_' + submissionId);
     var partnerNameElement = document.getElementById('PartnerName_' + submissionId);
     var partnerContactElement = document.getElementById('PartnerContact_' + submissionId);
-    console.log(recruiterElement);
-    console.log(consultantElement);
     // Disable editing for the elements
+    
     dosElement.contentEditable = false;
     recruiterElement.disabled = true;
     consultantElement.disabled = true;
@@ -113,13 +131,12 @@ function saveSubmission(submissionId,user) {
     endClientLocationElement.contentEditable = false;
     partnerNameElement.contentEditable = false;
     partnerContactElement.contentEditable = false;
-
-
+    
     //Get the updates values from the editable elemnts
     var updatedSubmission = {
         S_DOS: dosElement.innerHTML,
-        S_RecruiterId: recruiterElement.value,
-        S_ConsultantId: consultantElement.value,
+        S_RecruiterId: recruiterElement.firstChild.value,
+        S_ConsultantId: consultantElement.firstChild.value,
         S_ConsultantJobTitle: jobTitleElement.innerHTML,
         S_ImplementationPartner: impPartnerElement.innerHTML,
         S_EndClient: endClientElement.innerHTML,
@@ -141,7 +158,7 @@ function saveSubmission(submissionId,user) {
 
     console.log(updatedSubmission);
     //Send the updated submission data to the server
-    fetch(submissionId + '/', {
+    fetch(submissionId + '/' + 'highlight/', {
         method: 'PUT',
         credentials: 'same-origin',
         headers: {
@@ -154,7 +171,7 @@ function saveSubmission(submissionId,user) {
         .then(data => {
             setTimeout(() => {
                 window.location.reload();
-            }, 50000);
+            }, 1000);
         })
         .catch(error => {
             console.log(error);
@@ -173,4 +190,23 @@ function saveSubmission(submissionId,user) {
 function deleteSubmission(submissionId) {
     // Perform the delete operation or any other necessary action
     console.log('Delete submission with ID:', submissionId);
+    fetch(submissionId + '/' + 'highlight/', {
+        method: 'DELETE',
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Accept': "application/json"
+        }
+    }).then(response => response.json())
+        .then(data => {
+            setTimeout(() => {
+                console.log(window.location);
+                window.location.reload();
+            }, 1000);
+        })
+        .catch(error => {
+            console.log(error);
+        });
+
 }

@@ -46,8 +46,8 @@
 <form method="post" action="{% url 'submissions-list' %}">
     {% csrf_token %}
 
-    <label for="dos">DOS:</label>
-    <input type="date" name="dos" id="dos" value="{{ today|date:'Y-m-d' }}" required>
+    <label for="dos_{{submission.id}}">DOS:</label>
+    <input type="date" name="dos" id="dos_{{submission.id}}" value="{{ today|date:'Y-m-d' }}" required>
     <br>
 
     <label for="recruiter_{{submission.id}}">Recruiter:</label>
@@ -97,8 +97,8 @@
 <script>
     var recruitersData = JSON.parse('{{ json_recruiters|escapejs }}');
     var consultantsData = JSON.parse('{{ json_consultants|escapejs }}');
-    console.log('In the HTML: ',typeof (recruitersData));
-    console.log('In the HTML: ', typeof (consultantsData));
+    console.log('In the HTML: ',recruitersData);
+    console.log('In the HTML: ', consultantsData);
     // Add an event listener to each Edit button
     /*
     var editButtons = document.querySelectorAll('[id^="editbutton_"]');
@@ -119,6 +119,8 @@
     });
     */
     function handleEditButtonClick(submissionID) {
+        console.log(typeof (submissionID));
+        console.log('{{ user }}');
         editSubmission(submissionID, '{{ user }}');
         //initializeDropdowns(recruitersData, consultantsData, submissionID, '{{ user }}');
     }

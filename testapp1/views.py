@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 '''
+from http.client import HTTPResponse
 from urllib import response
 from testapp1.models import Submissions,Recruiter, Consultant
 from testapp1.api.serializers import Submissions_Serializer, RecruiterSerializer, ConsultantSerializer
@@ -28,6 +29,8 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.core.serializers import serialize
 import json
+from uuid import UUID
+from django.http import JsonResponse
 # Create your views here.
 
 
@@ -176,7 +179,6 @@ class submissions_list(generics.ListCreateAPIView):
         serializer.save(S_RecruiterId=recruiter.R_Id)
 
     def post(self, request, *args, **kwargs):
-        print("Inside the get method of submissions_list view")
         # Get the logged-in recruiter
         recruiter = get_object_or_404(Recruiter, R_UserName=request.user.R_UserName)
         # Get all consultants
@@ -184,8 +186,7 @@ class submissions_list(generics.ListCreateAPIView):
         # Create a dictionary to pass to the template context
         context = {
             'recruiters': [recruiter],
-            'consultants': consultants,
-            'test_variable': 'Test Value'
+            'consultants': consultants
         }
         submission = Submissions()
         submission.S_RecruiterId = recruiter
@@ -218,10 +219,74 @@ class submissions_detail(generics.RetrieveUpdateDestroyAPIView):
     #permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
     #queryset = Submissions.objects.get(id = pk)
     serializer_class = Submissions_Serializer
+    http_method_names = ['get', 'put', 'delete']
 
+
+    def get_object(self, pk):
+        submission = get_object_or_404(Submissions, pk=pk)
+        print("Submission:", submission)
+        return submission
+
+    def put(self, request, pk):
+        print('In the put request')
+        try:
+            submission = self.get_object(pk)
+            recruitrer_object = Recruiter.objects.get(R_UserName = request.data['S_RecruiterId'])
+            consultant_object = Consultant.objects.get(C_Id = UUID(request.data['S_ConsultantId']))
+            request.data['S_RecruiterId'] = recruitrer_object
+            request.data[ 'S_ConsultantId'] = consultant_object
+            print(request.data)
+            submission.S_RecruiterId = request.data['S_RecruiterId']
+            submission.S_ConsultantId = request.data[ 'S_ConsultantId']
+            submission.S_ConsultantJobTitle = request.data['S_ConsultantJobTitle']
+            submission.S_ImplementationPartner = request.data['S_ImplementationPartner']
+            submission.S_EndClient = request.data['S_EndClient']
+            submission.S_EndClientLocation =  request.data['S_EndClientLocation']
+            submission.S_ImplementationPartner_Name = request.data['S_ImplementationPartner_Name']
+            submission.S_ImplementationPartner_Contact = request.data['S_ImplementationPartner_Contact']
+            submission.save()
+            return JsonResponse({'message': 'Submission updated successfully'})
+        except Submissions.DoesNotExist:
+            return JsonResponse({'error': 'Submission not found'}, status=404)
+
+    def delete(self,request,pk):
+        try:
+            submission = self.get_object(pk)
+            submission.delete()
+            return  JsonResponse({'message': 'Submission deleted successfully'})
+        except:
+            return JsonResponse({'error': 'Submission not found'}, status=404)
+
+    '''
     def get_object(self):
-        pk = self.kwargs.get('pk')
+        pk = self.kwargs['pk']
+        #pk = self.kwargs.get('pk')
+        submission = get_object_or_404(Submissions, pk = pk)
+        print("Submission:", submission)
         return get_object_or_404(Submissions, pk = pk)
+
+
+    def put(self,request,pk):
+        print('In the put request')
+        try:
+            submission = self.get_object(pk)
+            updated_data = request.json
+            print(updated_data)
+            recruitrer_object = Recruiter.objects.get(R_UserName = updated_data.S_RecruiterId)
+            consultant_object = Consultant.objects.get(C_Id = UUID(updated_data.S_ConsultantId))
+            submission.S_RecruiterId = recruitrer_object
+            submission.S_ConsultantId = consultant_object
+            submission.S_ConsultantJobTitle = updated_data.S_ConsultantJobTitle
+            submission.S_ImplementationPartner = updated_data.S_ImplementationPartner
+            submission.S_EndClient = updated_data.S_EndClient
+            submission.S_EndClientLocation = updated_data.S_EndClientLocation
+            submission.S_ImplementationPartner_Name = updated_data.S_ImplementationPartner_Name
+            submission.S_ImplementationPartner_Contact = updated_data.S_ImplementationPartner_Contact
+            submission.save()
+            return JsonResponse({'message': 'Submission updated successfully'})
+        except:
+            return JsonResponse({'error': 'Submission not found'}, status=404)
+        '''
 
 '''
 @api_view(['GET', 'POST'])
